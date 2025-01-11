@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Popup</title>
+    <link rel="stylesheet" href="/css/popup.css">
+</head>
+<body>
+    <div class="container">
+        <section id="weekly-log">
+            <h2 class="collapsible">Týdenní přehled</h2>
+            <div class="content">
+                <div class="week-navigation">
+                    <button id="prev-week">&lt; Předchozí týden</button>
+                    <span id="current-week-range"></span>
+                    <button id="next-week">Další týden &gt;</button>
+                </div>
+                <table id="weekly-tasks-calendar">
+                    <thead>
+                        <tr>
+                            <th>Úkol</th>
+                            <th>Celkem za úkol</th>
+                            <!-- Dynamicky vložené dny -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamicky vložené řádky -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>Celkem</td>
+                            <td id="total-hours-tasks">0</td>
+                            <!-- Dynamicky vložené celkové hodiny za dny -->
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <section id="toggl-tasks">
+            <h2 class="collapsible">Úkoly z Toggl</h2>
+            <div class="content">
+                <ul id="toggl-tasks-list">
+                    <!-- Dynamicky vložené -->
+                </ul>
+            </div>
+        </section>
+    </div>
+    <script src="/js/popup.js"></script>
+</body>
+</html>

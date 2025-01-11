@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>EZlog options</title>
+        <link href="/css/style.css" rel="stylesheet" type="text/css">
+        <link href="/css/fontawesome.min.css" rel="stylesheet" type="text/css">
+    </head>
+
+    <body>
+        <div class="options-container">
+            <h1>EZlog Settings</h1>
+
+            <section id="jira-settings">
+                <h2>Jira settings</h2>
+                <div class="form-group">
+                    <label for="jira-username">Username:</label>
+                    <input type="text" id="jira-username">
+                </div>
+                <div class="form-group">
+                    <label for="jira-api-token">API Token:</label>
+                    <input type="password" id="jira-api-token">
+                </div>
+                <div class="form-group">
+                    <label for="jira-url">URL:</label>
+                    <input type="text" id="jira-url">
+                </div>
+            </section>
+
+            <section id="favorite-tasks">
+                <h2>Favorite Jira Tasks</h2>
+                <ul id="favorite-tasks-list" class="task-list">
+                </ul>
+                <div class="form-group2">
+                    <input type="text" id="favorite-task-input" placeholder="Enter Jira task">
+                    <button id="add-favorite-task" class="icon-button">+</button>
+                </div>
+            </section>
+
+            <section id="calendar-settings">
+                <h2>Calendar settings</h2>
+                <div id="calendar-mappings">
+                    <ul id="calendar-template-list" class="task-list"></ul>
+                    <div class="mapping-group">
+                        <div class="form-group">
+                            <label for="event-template">Event name template:</label>
+                            <input type="text" id="event-template">
+                        </div>
+                        <div class="form-group">
+                            <label for="calendar-issue-number">Jira task:</label>
+                            <input type="text" id="calendar-issue-number" autocomplete="off">
+                            <div class="datalist" id="calendar-jira-tasks"></div>
+                        </div>
+                    </div>
+                </div>
+                <button id="add-calendar-template">Add template</button><br>
+            </section>
+
+            <section id="bb-settings">
+                <h2>Bitbucket settings</h2>
+                <div class="form-group">
+                    <label for="bb-review-default">Default review duration:</label>
+                    <input type="text" id="bb-review-default">
+                </div>
+                <div class="form-group">
+                    <label for="bb-description-default">Default log description:</label>
+                    <input type="text" id="bb-description-default">
+                </div>
+            </section>
+
+            <section id="toggl-settings" style="display:none">
+                <h2>Toggl settings</h2>
+                <div class="form-group">
+                    <label for="toggl-api-key">API key:</label>
+                    <input type="password" id="toggl-api-key">
+                </div>
+                <div class="form-group">
+                    <label for="time-rounding">Time rounding:</label>
+                    <select id="time-rounding">
+                        <option value="up">Zaokrouhlit nahoru</option>
+                    </select>
+                </div>
+            </section>
+
+            <button id="save">Save</button>
+            <div id="status" class="transparent">Options saved</div>
+        </div>
+
+        <script src="/js/repository.js"></script>
+        <script src="/js/models.js"></script>
+        <script src="/js/utils.js"></script>
+        <script src="/js/options.js"></script>
+    </body>
+</html>
