@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'logWork') {
         getLocalData().then((items) => {
             const url = items.jiraUrl + "rest/api/3/issue/" + message.issue + "/worklog"
-console.log(items)
+            console.log(items)
             const body = {
                 comment: {
                     content: [
@@ -69,6 +69,54 @@ console.log(items)
             console.log(items)
             const url = items.jiraUrl + "rest/api/3/issue/" + message.issue
 
+            if (!IS_DEBUG) {
+                fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Basic ${btoa(`${items.jiraUsername}:${items.jiraToken}`)}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        console.log(Response)
+                        return response.json()
+                    })
+                    .then(data => sendResponse({data}))
+                    .catch(error => sendResponse({error}));
+            } else {
+                console.log(url)
+            }
+        })
+        return true;
+    } else if (message.type === "getWorklog") {
+        getLocalData().then((items) => {
+            console.log(items)
+            const url = items.jiraUrl + "rest/api/3/issue/" + message.issue + "/worklog"
+
+            if (!IS_DEBUG) {
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Basic ${btoa(`${items.jiraUsername}:${items.jiraToken}`)}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        console.log(Response)
+                        return response.json()
+                    })
+                    .then(data => sendResponse({data}))
+                    .catch(error => sendResponse({error}));
+            } else {
+                console.log(url)
+            }
+        })
+        return true;
+    } else if (message.type === "search") {
+        getLocalData().then(items => {
+            console.log(items)
+            const url = items.jiraUrl + "rest/api/3/search?jql=" + message.jql
+
             fetch(url, {
                 method: 'GET',
                 headers: {
@@ -77,14 +125,13 @@ console.log(items)
                 }
             })
                 .then(response => {
-                    console.log(Response)
+                    console.log(response)
                     return response.json()
                 })
                 .then(data => sendResponse({data}))
                 .catch(error => sendResponse({error}));
-
         })
-        return true;
+        return true
     }
 });
 

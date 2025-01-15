@@ -1,52 +1,107 @@
 <!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Extension Popup</title>
-    <link rel="stylesheet" href="/css/popup.css">
-</head>
-<body>
-    <div class="container">
-        <section id="weekly-log">
-            <h2 class="collapsible">Týdenní přehled</h2>
-            <div class="content">
-                <div class="week-navigation">
-                    <button id="prev-week">&lt; Předchozí týden</button>
-                    <span id="current-week-range"></span>
-                    <button id="next-week">Další týden &gt;</button>
-                </div>
-                <table id="weekly-tasks-calendar">
-                    <thead>
-                        <tr>
-                            <th>Úkol</th>
-                            <th>Celkem za úkol</th>
-                            <!-- Dynamicky vložené dny -->
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Dynamicky vložené řádky -->
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td>Celkem</td>
-                            <td id="total-hours-tasks">0</td>
-                            <!-- Dynamicky vložené celkové hodiny za dny -->
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </section>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title></title>
+        <link href="/css/style.css" rel="stylesheet" type="text/css">
+        <link href="/css/fontawesome.min.css" rel="stylesheet" type="text/css">
+    </head>
 
-        <section id="toggl-tasks">
-            <h2 class="collapsible">Úkoly z Toggl</h2>
-            <div class="content">
-                <ul id="toggl-tasks-list">
-                    <!-- Dynamicky vložené -->
-                </ul>
-            </div>
-        </section>
-    </div>
-    <script src="/js/popup.js"></script>
-</body>
+    <body>
+        <div class="popup-container">
+            <header>
+                <button id="prev-week">&lt;</button>
+                <span id="week-display">Jan 1 - Jan 7, 2025</span>
+                <button id="next-week">&gt;</button>
+            </header>
+
+            <section class="collapsible">
+                <button class="collapsible-header">Weekly Calendar</button>
+                <div class="collapsible-content" style="display: block">
+                    <div class="loader hidden" style="top: 150px;"><div></div><div></div><div></div><div></div></div>
+                    <table id="weekly-calendar">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Mon</th>
+                                <th>Tue</th>
+                                <th>Wed</th>
+                                <th>Thu</th>
+                                <th>Fri</th>
+                                <th>Sat</th>
+                                <th>Sun</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calendar-rows">
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td>Total</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </section>
+
+            <section class="collapsible">
+                <button class="collapsible-header">Favorite Tasks</button>
+                <div class="collapsible-content">
+                    <ul id="favorite-tasks">
+                    </ul>
+                </div>
+            </section>
+
+            <section class="collapsible">
+                <button class="collapsible-header" id="recent-tasks-header">Recent Tasks</button>
+                <div class="collapsible-content">
+                    <div class="loader hidden"><div></div><div></div><div></div><div></div></div>
+                    <ul id="recent-tasks">
+                    </ul>
+                </div>
+            </section>
+
+            <section class="collapsible">
+                <button class="collapsible-header">Toggl Tasks</button>
+                <div class="collapsible-content">
+                    <ul id="toggl-tasks">
+                        <li>
+                            <strong>Jan 1</strong>
+                            <ul>
+                                <li>
+                                    <span>INS-789 - Prepare presentation</span> - <span>1.5h</span>
+                                    <button class="log-task-btn fright">Log to Jira</button>
+                                </li>
+                                <li>
+                                    <span>INS-789 - Prepare presentation</span> - <span>1.5h</span>
+                                    <button class="log-task-btn fright">Log to Jira</button>
+                                </li>
+                            </ul>
+                            <hr>
+                        </li>
+                        <li>
+                            <strong>Jan 2</strong>
+                            <ul>
+                                <li>
+                                    <span>INS-789 - Prepare presentation</span> - <span>1.5h</span>
+                                    <button class="log-task-btn fright">Log to Jira</button>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+
+        <script src="/js/models.js"></script>
+        <script src="/js/repository.js"></script>
+        <script src="/js/popup.js"></script>
+    </body>
 </html>

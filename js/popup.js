@@ -1,119 +1,203 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+let options
 
-    function getWeekDates(startDate) {
-        const dates = [];
-        const start = new Date(startDate);
-        start.setDate(start.getDate() - ((start.getDay() + 6) % 7)); // Start on Monday
-        for (let i = 0; i < 7; i++) {
-            const current = new Date(start);
-            current.setDate(start.getDate() + i);
-            dates.push(current);
+document.addEventListener("DOMContentLoaded", () => {
+    options = new Options()
+    options.load().then(() => {
+        const weekDisplay = document.getElementById("week-display")
+        let currentWeekStart = new Date()
+        currentWeekStart.setDate(currentWeekStart.getDate() - (currentWeekStart.getDay() - 1))
+        currentWeekStart.setHours(0, 0, 0, 0)
+
+        const updateWeekDisplay = () => {
+            const start = new Date(currentWeekStart)
+            const end = new Date(currentWeekStart)
+            end.setDate(end.getDate() + 6)
+
+            const formatDate = date => `${date.toLocaleDateString()}` // TODO: full date
+            weekDisplay.textContent = `${formatDate(start)} - ${formatDate(end)}`
+            updateCalendarDates(start)
         }
-        return dates;
+
+        const updateCalendarDates = (start) => {
+            const headers = document.querySelectorAll("#weekly-calendar th")
+            for (let i = 0; i <= 6; i++) {
+                const day = new Date(start)
+                day.setDate(day.getDate() + i)
+                headers[i + 1].textContent = `${headers[i + 1].textContent.split("\n")[0]}\n(${day.getDate()})`
+            }
+        }
+
+        document.getElementById("prev-week").addEventListener("click", () => {
+            currentWeekStart.setDate(currentWeekStart.getDate() - 7)
+            updateWeekDisplay()
+            setupCalendar(currentWeekStart)
+        })
+
+        document.getElementById("next-week").addEventListener("click", () => {
+            currentWeekStart.setDate(currentWeekStart.getDate() + 7)
+            updateWeekDisplay()
+            setupCalendar(currentWeekStart)
+        })
+
+        setupCalendar(currentWeekStart)
+        updateWeekDisplay()
+        setupFavoriteTasks()
+
+        document.querySelectorAll(".collapsible-header").forEach(button => {
+            button.addEventListener("click", () => {
+                if (button.id === "recent-tasks-header") {
+                    setupRecentTasks()
+                }
+                const content = button.nextElementSibling
+                content.style.display = content.style.display === "block" ? "none" : "block"
+            })
+        })
+    })
+})
+
+function setupFavoriteTasks() {
+    const favoriteTasks = document.getElementById("favorite-tasks")
+
+    options.favoriteTasks.forEach(task => {
+        const li = document.createElement("li")
+        const header = document.createElement("button")
+        header.classList.add("collapsible-header")
+        header.innerText = `${task.id} - ${task.name}`
+        const div = document.createElement("div")
+        div.classList.add("collapsible-content")
+        const durationInput = document.createElement("input")
+        durationInput.type = "text"
+        durationInput.classList.add("log-value-input")
+        durationInput.placeholder = "Duration"
+        const descriptionInput = document.createElement("input")
+        descriptionInput.type = "text"
+        descriptionInput.classList.add("log-description-input")
+        descriptionInput.placeholder = "Description"
+        const logBtn = document.createElement("button")
+        logBtn.classList.add("log-task-btn")
+        logBtn.innerText = "Log Work"
+        logBtn.addEventListener("click", () => {
+            // TODO: date
+            logWork(logBtn, task.id, new Date(), durationInput.value, descriptionInput.value)
+        })
+
+        div.appendChild(durationInput)
+        div.appendChild(descriptionInput)
+        div.appendChild(logBtn)
+        li.appendChild(header)
+        li.appendChild(div)
+        favoriteTasks.appendChild(li)
+    })
+}
+
+function setupRecentTasks() {
+    const recentTasks = document.getElementById("recent-tasks")
+    const loader = recentTasks.parentElement.querySelector(".loader")
+    loader.classList.remove("hidden")
+
+    getRecentTasks().then(it => {
+        console.log(it)
+        console.log(it["total"])
+        it.issues.forEach(task => {
+            const li = document.createElement("li")
+            const header = document.createElement("button")
+            header.classList.add("collapsible-header")
+            header.innerText = `${task.key} - ${task.fields.summary}`
+            const div = document.createElement("div")
+            div.classList.add("collapsible-content")
+            const durationInput = document.createElement("input")
+            durationInput.type = "text"
+            durationInput.classList.add("log-value-input")
+            durationInput.placeholder = "Duration"
+            const descriptionInput = document.createElement("input")
+            descriptionInput.type = "text"
+            descriptionInput.classList.add("log-description-input")
+            descriptionInput.placeholder = "Description"
+            const logBtn = document.createElement("button")
+            logBtn.classList.add("log-task-btn")
+            logBtn.innerText = "LogWork"
+            logBtn.addEventListener("click", () => {
+                // TODO: date
+                logWork(logBtn, task.key, new Date(), durationInput.value, descriptionInput.value)
+            })
+
+            div.appendChild(durationInput)
+            div.appendChild(descriptionInput)
+            div.appendChild(logBtn)
+            li.appendChild(header)
+            li.appendChild(div)
+            recentTasks.appendChild(li)
+
+            header.addEventListener("click", () => {
+                div.style.display = div.style.display === "block" ? "none" : "block"
+            })
+
+            loader.classList.add("hidden")
+        })
+    })
+        .catch(error => console.error(error))
+}
+
+function setupCalendar(startOfWeek) {
+    const loader = document.getElementById("weekly-calendar").parentElement.querySelector(".loader")
+    loader.classList.remove("hidden")
+    const tbody = document.getElementById("calendar-rows")
+    const footCells = document.querySelectorAll("#weekly-calendar tfoot td")
+    console.log(footCells)
+    tbody.innerHTML = ""
+
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(endOfWeek.getDate() + 7)
+    const formatDate = (it) => {
+        let year = new Intl.DateTimeFormat('en', {year: 'numeric'}).format(it)
+        let month = new Intl.DateTimeFormat('en', {month: '2-digit'}).format(it)
+        let day = new Intl.DateTimeFormat('en', {day: '2-digit'}).format(it)
+        return `${year}-${month}-${day}`
     }
+    getWorklog(formatDate(startOfWeek), formatDate(endOfWeek)).then(tasks => {
+        const totals = Array(7).fill(0)
+        const promises = tasks.issues.map(task => {
+            const taskDays = Array(7).fill(0)
+            return getWorklogForIssue(task.key).then(it => {
+                const logs = it.worklogs
+                    .filter(it => it.author.emailAddress === options.jiraUsername)
+                    .filter(it => {
+                        const d = new Date(it.started)
+                        return d >= startOfWeek && d <= endOfWeek
+                    })
 
-    function formatDate(date) {
-        return date.toISOString().split('T')[0]; // YYYY-MM-DD
-    }
+                logs.forEach(it => {
+                    const started = new Date(it.started)
+                    taskDays[started.getDay() - 1] += it.timeSpentSeconds
+                })
 
-    function loadWeeklyTasksCalendar(weekStartDate) {
-        const weekDates = getWeekDates(weekStartDate);
+                const tr = document.createElement("tr")
+                const td = document.createElement("td")
+                td.innerText = `${task.key}\n${task.fields.summary}`
+                tr.appendChild(td)
 
-        const weekRangeElement = document.getElementById('current-week-range');
-        weekRangeElement.textContent = `Od ${formatDate(weekDates[0])} do ${formatDate(weekDates[6])}`;
+                for (let i = 0; i < 7; i++) {
+                    const td = document.createElement("td")
+                    td.innerText = `${+(taskDays[i] / 60 / 60).toFixed(2)}h`
+                    tr.appendChild(td)
 
-        const thead = document.querySelector('#weekly-tasks-calendar thead tr');
-        const tbody = document.querySelector('#weekly-tasks-calendar tbody');
-        const tfoot = document.querySelector('#weekly-tasks-calendar tfoot tr');
+                    totals[i] += taskDays[i]
+                }
 
-        // Reset table
-        thead.innerHTML = '<th>Úkol</th><th>Celkem za úkol</th>';
-        tbody.innerHTML = '';
-        tfoot.innerHTML = '<td>Celkem</td><td id="total-hours-tasks">0</td>';
+                tbody.appendChild(tr)
+            })
+        })
 
-        // Fill header with dates
-        weekDates.forEach(date => {
-            const th = document.createElement('th');
-            th.textContent = `${weekDays[date.getDay() - 1]} (${date.getDate()})`;
-            thead.appendChild(th);
-        });
+        Promise.all(promises).then(() => {
+            for (let i = 0; i < 7; i++) {
+                footCells[i + 1].innerText = `${+(totals[i] / 60 / 60).toFixed(2)}h`
+            }
+            loader.classList.add("hidden")
+        })
+    })
+}
 
-        // Mock tasks
-        const tasks = [
-            { id: 'INS-29466', hours: [2, 3, 4, 0, 5, 6, 4] },
-            { id: 'INS-29947', hours: [0.5, 1, 0, 0, 0, 0, 0] },
-        ];
 
-        let totalWeekHours = 0;
-        tasks.forEach(task => {
-            const row = document.createElement('tr');
-            const totalTaskHours = task.hours.reduce((sum, h) => sum + h, 0);
-
-            row.innerHTML = `
-                <td><a href="https://jira.example.com/browse/${task.id}" target="_blank">${task.id}</a></td>
-                <td>${totalTaskHours.toFixed(1)}h</td>
-            `;
-
-            task.hours.forEach(hours => {
-                const td = document.createElement('td');
-                td.textContent = hours ? `${hours}h` : '';
-                row.appendChild(td);
-                totalWeekHours += hours;
-            });
-
-            tbody.appendChild(row);
-        });
-
-        // Add totals to footer
-        weekDates.forEach((_, i) => {
-            const totalDayHours = tasks.reduce((sum, task) => sum + task.hours[i], 0);
-            const td = document.createElement('td');
-            td.textContent = totalDayHours ? `${totalDayHours.toFixed(1)}h` : '';
-            tfoot.appendChild(td);
-        });
-
-        document.getElementById('total-hours-tasks').textContent = `${totalWeekHours.toFixed(1)}h`;
-    }
-
-    let currentWeekDate = new Date();
-    loadWeeklyTasksCalendar(currentWeekDate);
-
-    document.getElementById('prev-week').addEventListener('click', () => {
-        currentWeekDate.setDate(currentWeekDate.getDate() - 7);
-        loadWeeklyTasksCalendar(currentWeekDate);
-    });
-
-    document.getElementById('next-week').addEventListener('click', () => {
-        currentWeekDate.setDate(currentWeekDate.getDate() + 7);
-        loadWeeklyTasksCalendar(currentWeekDate);
-    });
-
-    function loadTogglTasks() {
-        const mockTogglTasks = [
-            { name: "Toggl Task 1", duration: "2h", date: "2023-01-01" },
-            { name: "Toggl Task 2", duration: "3h", date: "2023-01-02" },
-        ];
-
-        const togglList = document.getElementById('toggl-tasks-list');
-        togglList.innerHTML = '';
-
-        mockTogglTasks.forEach(task => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                ${task.date} - ${task.name} (${task.duration})
-                <button class="log-to-jira">Log to Jira</button>
-            `;
-
-            const logButton = li.querySelector('.log-to-jira');
-            logButton.addEventListener('click', () => {
-                console.log(`Logging ${task.name} to Jira`);
-                alert(`${task.name} logged to Jira!`);
-            });
-
-            togglList.appendChild(li);
-        });
-    }
-
-    loadTogglTasks();
-});
+// init array[7] with zeros
+// array[started.day - 1] += ...
+// TODO: solve end day, when not logged via extension - time not 0:00
