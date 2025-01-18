@@ -31,12 +31,26 @@ const init = () => {
             description.setAttribute("value", options.reviewDescription)
             description.classList.add("log-description-input")
 
+            const formatDate = (it) => {
+                let year = new Intl.DateTimeFormat('en', {year: 'numeric'}).format(it)
+                let month = new Intl.DateTimeFormat('en', {month: '2-digit'}).format(it)
+                let day = new Intl.DateTimeFormat('en', {day: '2-digit'}).format(it)
+                return `${year}-${month}-${day}`
+            }
+
+            const date = document.createElement("input")
+            const now = new Date()
+            date.setAttribute("type", "date")
+            date.id = "date"
+            date.value = formatDate(now)
+
             logButton.addEventListener("click", () => {
-                logWork(logButton, jiraIssue.href.split("/").slice(-1)[0], new Date(), logValue.value, description.value)
+                logWork(logButton, jiraIssue.href.split("/").slice(-1)[0], new Date(date.value), logValue.value, description.value)
             })
 
             menuButton.parentElement.insertBefore(logValue, menuButton)
             menuButton.parentElement.insertBefore(description, menuButton)
+            menuButton.parentElement.insertBefore(date, menuButton)
             menuButton.parentElement.insertBefore(logButton, menuButton)
         })
     } else if (/pull-requests\/$/.test(window.location.href)) {

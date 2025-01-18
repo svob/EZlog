@@ -486,3 +486,7 @@ hr {
     font-size: 11px;
     color: #777777;
 }
+
+input[type="date"] {
+    width: 35px;
+}
