@@ -178,7 +178,11 @@ function setupCalendar(startOfWeek) {
 
                 for (let i = 0; i < 7; i++) {
                     const td = document.createElement("td")
-                    td.innerText = `${+(taskDays[i] / 60 / 60).toFixed(2)}h`
+                    if (taskDays[i] === 0) {
+                        td.innerText = ""
+                    } else {
+                        td.innerText = `${+(taskDays[i] / 60 / 60).toFixed(2)}h`
+                    }
                     tr.appendChild(td)
 
                     totals[i] += taskDays[i]
@@ -190,8 +194,14 @@ function setupCalendar(startOfWeek) {
 
         Promise.all(promises).then(() => {
             for (let i = 0; i < 7; i++) {
-                footCells[i + 1].innerText = `${+(totals[i] / 60 / 60).toFixed(2)}h`
+                if (totals[i] === 0) {
+                    footCells[i + 1].innerText = ""
+                } else {
+                    footCells[i + 1].innerText = `${+(totals[i] / 60 / 60).toFixed(2)}h`
+                }
             }
+            const week = totals.reduce((acc, it) => acc + it)
+            footCells[9].innerText = `${+(week / 60 / 60).toFixed(2)}h`
             loader.classList.add("hidden")
         })
     })
