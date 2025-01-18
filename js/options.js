@@ -22,10 +22,11 @@ const addTaskToList = (task) => {
     sync.classList.add("loading")
 
     const removeBtn = document.createElement("button")
-    removeBtn.textContent = "Odstranit"
+    removeBtn.textContent = "Remove"
     removeBtn.addEventListener("click", () => {
         li.remove()
         options.favoriteTasks = options.favoriteTasks.filter(it => it !== task)
+        options.save()
     })
 
     li.appendChild(span)
@@ -42,13 +43,19 @@ const addTaskToList = (task) => {
             (response) => {
                 if (response.error) {
                     console.error(response.error);
+                    const err = document.createElement("span")
+                    err.classList.add("error")
+                    err.textContent = "Failed to get a task info"
+                    span.appendChild(err)
                 } else {
                     sync.classList.add("hidden")
                     try {
                         text = text = `${task.id} - ${response.data.fields.summary}`
                         span.textContent = text
                         options.favoriteTasks.push(new Task(task.id, response.data.fields.summary))
+                        options.save()
                     } catch (e) {
+                        console.error(e)
                         const err = document.createElement("span")
                         err.classList.add("error")
                         err.textContent = "Failed to get a task info"
@@ -87,10 +94,11 @@ const insertCalendarTemplateToList = (template) => {
     span.textContent = `${template.template} - ${template.issue}`
 
     const removeBtn = document.createElement("button")
-    removeBtn.textContent = "Odstranit"
+    removeBtn.textContent = "Remove"
     removeBtn.addEventListener("click", () => {
         li.remove()
         options.calendarTemplates = options.calendarTemplates.filter((it) => it !== template)
+        options.save()
     })
 
     li.appendChild(span)
@@ -105,6 +113,7 @@ const addCalendarTemplate = () => {
     const template = new Template(calendarEventTemplate.value, calendarIssueInput.value)
     insertCalendarTemplateToList(template)
     options.calendarTemplates.push(template)
+    options.save()
 }
 
 const onCalendarIssueInput = () => {
@@ -123,7 +132,11 @@ const onCalendarIssueInput = () => {
 
 const saveOptions = () => {
     options.jiraUsername = document.getElementById("jira-username").value
-    options.jiraUrl = document.getElementById("jira-url").value
+    let url = document.getElementById("jira-url").value
+    if (!url.endsWith("/")) {
+        url += "/"
+    }
+    options.jiraUrl = url
     options.jiraToken = document.getElementById("jira-api-token").value
     options.reviewDefaultValue = document.getElementById("bb-review-default").value
     options.reviewDescription = document.getElementById("bb-description-default").value
@@ -155,9 +168,15 @@ const restoreOptions = () => {
 
 document.addEventListener("DOMContentLoaded", () => {
     restoreOptions() // TODO: await?
-    document.getElementById("save").addEventListener("click", () => {
-        saveOptions()
-    })
+//    document.getElementById("save").addEventListener("click", () => {
+//        saveOptions()
+//    })
+
+    document.getElementById("jira-username").addEventListener("input", saveOptions)
+    document.getElementById("jira-url").addEventListener("input", saveOptions)
+    document.getElementById("jira-api-token").addEventListener("input", saveOptions)
+    document.getElementById("bb-review-default").addEventListener("input", saveOptions)
+    document.getElementById("bb-description-default").addEventListener("input", saveOptions)
 
     addFavoriteTaskButton.addEventListener("click", addFavoriteTask)
     favoriteTaskInput.addEventListener("keydown", (e) => {

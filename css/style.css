@@ -482,3 +482,7 @@ hr {
   }
 }
 
+.hint {
+    font-size: 11px;
+    color: #777777;
+}

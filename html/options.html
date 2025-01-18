@@ -17,14 +17,17 @@
                 <div class="form-group">
                     <label for="jira-username">Username:</label>
                     <input type="text" id="jira-username">
+                    <span class="hint">Usually full email address</span>
                 </div>
                 <div class="form-group">
                     <label for="jira-api-token">API Token:</label>
                     <input type="password" id="jira-api-token">
+                    <span class="hint"><a href="https://id.atlassian.com/manage-profile/security/api-tokens">Manage JIRA acces tokens</a></span>
                 </div>
                 <div class="form-group">
                     <label for="jira-url">URL:</label>
                     <input type="text" id="jira-url">
+                    <span class="hint">e.g. https://example.atlassian.net/</span>
                 </div>
             </section>
 
@@ -32,6 +35,7 @@
                 <h2>Favorite Jira Tasks</h2>
                 <ul id="favorite-tasks-list" class="task-list">
                 </ul>
+                <span class="hint">Task id in format TST-1234</span>
                 <div class="form-group2">
                     <input type="text" id="favorite-task-input" placeholder="Enter Jira task">
                     <button id="add-favorite-task" class="icon-button">+</button>
@@ -46,11 +50,13 @@
                         <div class="form-group">
                             <label for="event-template">Event name template:</label>
                             <input type="text" id="event-template">
+                            <span class="hint">Event name in calendar (supports regex)</span>
                         </div>
                         <div class="form-group">
                             <label for="calendar-issue-number">Jira task:</label>
                             <input type="text" id="calendar-issue-number" autocomplete="off">
                             <div class="datalist" id="calendar-jira-tasks"></div>
+                            <span class="hint">Task id in format TST-1234</span>
                         </div>
                     </div>
                 </div>
@@ -83,7 +89,7 @@
                 </div>
             </section>
 
-            <button id="save">Save</button>
+            <!--<button id="save">Save</button>-->
             <div id="status" class="transparent">Options saved</div>
         </div>
 
