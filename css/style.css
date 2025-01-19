@@ -121,7 +121,7 @@ button:hover {
     cursor: pointer;
 }
 
-.datalist:hover {
+.datalist div:hover {
     background-color: #f0f0f0;
 }
 

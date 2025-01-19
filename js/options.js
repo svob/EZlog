@@ -41,6 +41,7 @@ const addTaskToList = (task) => {
                 issue: task.id,
             },
             (response) => {
+                sync.classList.add("hidden")
                 if (response.error) {
                     console.error(response.error);
                     const err = document.createElement("span")
@@ -48,7 +49,6 @@ const addTaskToList = (task) => {
                     err.textContent = "Failed to get a task info"
                     span.appendChild(err)
                 } else {
-                    sync.classList.add("hidden")
                     try {
                         text = text = `${task.id} - ${response.data.fields.summary}`
                         span.textContent = text

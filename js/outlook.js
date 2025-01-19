@@ -1,3 +1,4 @@
+let lang
 let observerConnected = false
 let peek
 let options
@@ -162,24 +163,37 @@ const addTableLogButton = (eventTitle) => {
                 // TODO: support month view or fuck it?
                 if (window.location.href.endsWith("day")) {
                     // 10. leden 2025
+                    // January 10, 2025
                     const dateString = document.getElementsByClassName("zytMo")[0].innerText.split(" ")
-                    var date = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[1]]} ${dateString[2]}`))
+                    const month = dateMapping[dateString[1]] || dateString[1] // for cz or english lang
+                    var date = new Date(Date.parse(`${dateString[0]} ${month} ${dateString[2]}`))
                 } else if (window.location.href.endsWith("week")) {
-                    const dateString = document.getElementsByClassName("zytMo")[0].innerText.split(" ")
                     let minDate
-                    console.log(dateString)
-                    if (dateString.length === 5) {
-                        // 06. – 10. leden 2025
-//                        const maxDate = new Date(Date.parse(`${dateString[2]} ${dateMapping[dateString[3]]} ${dateString[4]}`))
-                        minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[3]]} ${dateString[4]}`))
-                    } else if (dateString.length === 7) {
-                        // 30. prosinec 2024 – 03. leden 2025
-//                        const maxDate = new Date(Date.parse(`${dateString[4]} ${dateMapping[dateString[5]]} ${dateString[6]}`))
-                        minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[1]]} ${dateString[2]}`))
+                    if (lang === "cs") {
+                        const dateString = document.getElementsByClassName("zytMo")[0].innerText.split(" ")
+                        if (dateString.length === 5) {
+                            // 06. – 10. leden 2025
+                            minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[3]]} ${dateString[4]}`))
+                        } else if (dateString.length === 7) {
+                            // 30. prosinec 2024 – 03. leden 2025
+                            minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[1]]} ${dateString[2]}`))
+                        } else {
+                            // 31. březen – 04. duben 2025
+                            minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[1]]} ${dateString[5]}`))
+                        }
                     } else {
-                        // 31. březen – 04. duben 2025
-//                        const maxDate = new Date(Date.parse(`${dateString[3]} ${dateMapping[dateString[4]]} ${dateString[5]}`))
-                        minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[1]]} ${dateString[5]}`))
+                        // default to en
+                        const dateString = document.getElementsByClassName("zytMo")[0].innerText.split(" ")
+                        if (dateString.length === 3) {
+                            // 2025, January 19–25
+                            minDate = new Date(Date.parse(`${dateString[2].split("–")[0]} ${dateString[1]} ${dateString[0].slice(0, -1)}`))
+                        } else if (dateString.length === 7) {
+                            // 2024, December 29 – 2025, January 04
+                            minDate = new Date(Date.parse(`${dateString[2]} ${dateString[1]} ${dateString[0].slice(0, -1)}`))
+                        } else {
+                            // 2025, January 26 – February 01
+                            minDate = new Date(Date.parse(`${dateString[2]} ${dateString[1]} ${dateString[0].slice(0, -1)}`))
+                        }
                     }
                     var date = new Date(minDate)
                     date.setDate(date.getDate() + dayIndex)
@@ -199,6 +213,7 @@ const addTableLogButton = (eventTitle) => {
 const init = () => {
     options = new Options()
     options.load()
+    lang = document.getElementsByTagName("html")[0].getAttribute("lang")
     const modalHtml = `
     <div id="modal" class="modal">
         <div class="modal-content">
