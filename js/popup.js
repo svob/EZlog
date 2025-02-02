@@ -58,6 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
 function setupFavoriteTasks() {
     const favoriteTasks = document.getElementById("favorite-tasks")
 
+    const formatDate = (it) => {
+        let year = new Intl.DateTimeFormat('en', {year: 'numeric'}).format(it)
+        let month = new Intl.DateTimeFormat('en', {month: '2-digit'}).format(it)
+        let day = new Intl.DateTimeFormat('en', {day: '2-digit'}).format(it)
+        return `${year}-${month}-${day}`
+    }
+
     options.favoriteTasks.forEach(task => {
         const li = document.createElement("li")
         const header = document.createElement("button")
@@ -73,16 +80,20 @@ function setupFavoriteTasks() {
         descriptionInput.type = "text"
         descriptionInput.classList.add("log-description-input")
         descriptionInput.placeholder = "Description"
+        const date = document.createElement("input")
+        const now = new Date()
+        date.setAttribute("type", "date")
+        date.value = formatDate(now)
         const logBtn = document.createElement("button")
         logBtn.classList.add("log-task-btn")
         logBtn.innerText = "Log Work"
         logBtn.addEventListener("click", () => {
-            // TODO: date
-            logWork(logBtn, task.id, new Date(), durationInput.value, descriptionInput.value)
+            logWork(logBtn, task.id, new Date(date.value), durationInput.value, descriptionInput.value)
         })
 
         div.appendChild(durationInput)
         div.appendChild(descriptionInput)
+        div.appendChild(date)
         div.appendChild(logBtn)
         li.appendChild(header)
         li.appendChild(div)
@@ -94,6 +105,13 @@ function setupRecentTasks() {
     const recentTasks = document.getElementById("recent-tasks")
     const loader = recentTasks.parentElement.querySelector(".loader")
     loader.classList.remove("hidden")
+
+    const formatDate = (it) => {
+        let year = new Intl.DateTimeFormat('en', {year: 'numeric'}).format(it)
+        let month = new Intl.DateTimeFormat('en', {month: '2-digit'}).format(it)
+        let day = new Intl.DateTimeFormat('en', {day: '2-digit'}).format(it)
+        return `${year}-${month}-${day}`
+    }
 
     getRecentTasks().then(it => {
         console.log(it)
@@ -113,16 +131,20 @@ function setupRecentTasks() {
             descriptionInput.type = "text"
             descriptionInput.classList.add("log-description-input")
             descriptionInput.placeholder = "Description"
+            const date = document.createElement("input")
+            const now = new Date()
+            date.setAttribute("type", "date")
+            date.value = formatDate(now)
             const logBtn = document.createElement("button")
             logBtn.classList.add("log-task-btn")
             logBtn.innerText = "LogWork"
             logBtn.addEventListener("click", () => {
-                // TODO: date
-                logWork(logBtn, task.key, new Date(), durationInput.value, descriptionInput.value)
+                logWork(logBtn, task.key, new Date(date.value), durationInput.value, descriptionInput.value)
             })
 
             div.appendChild(durationInput)
             div.appendChild(descriptionInput)
+            div.appendChild(date)
             div.appendChild(logBtn)
             li.appendChild(header)
             li.appendChild(div)

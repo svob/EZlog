@@ -57,6 +57,8 @@ select {
 }
 
 #add-calendar-template,
+#oneTime-logBtn,
+button.tab-link,
 button {
     display: inline-block;
     background: #333;
@@ -84,7 +86,7 @@ button.absolute {
     background-color: #2196F3;
 }
 
-button:hover {
+.icon-button-small:hover {
     background: #555;
 }
 
@@ -487,6 +489,11 @@ hr {
     color: #777777;
 }
 
-input[type="date"] {
+input[type="date"]#date {
     width: 35px;
+}
+
+.popup-container input[type="date"] {
+    width: 28px;
+    padding: 4px;
 }

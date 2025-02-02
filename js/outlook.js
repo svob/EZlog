@@ -44,13 +44,64 @@ const onCalendarIssueInput = () => {
     })
 }
 
-const displayModal = (eventTitle) => {
+const onOneTimeCalendarIssueInput = () => {
+    const calendarDataList = document.getElementById("oneTime-jira-tasks")
+    const calendarIssueInput = document.getElementById("oneTime-issue-number")
+
+    calendarDataList.innerHTML = ""
+    options.favoriteTasks.forEach(task => {
+        const option = document.createElement("div")
+        option.textContent = `${task.id} - ${task.name}`
+        option.addEventListener("click", () => {
+            calendarIssueInput.value = task.id
+            calendarDataList.style.display = "none"
+        })
+        calendarDataList.appendChild(option)
+    })
+
+    const query = calendarIssueInput.value.toLowerCase()
+    calendarDataList.style.display = "block"
+    Array.from(calendarDataList.children).forEach(option => {
+        if (option.textContent.toLowerCase().includes(query)) {
+            option.style.display = "block"
+        } else {
+            option.style.display = "none"
+        }
+    })
+}
+
+const displayModal = (eventTitle, duration, date) => {
     const modal = document.getElementById("modal")
     const closeBtn = modal.querySelector(".close")
+
+    const templateTabBtn = modal.querySelector(".tab-link[data-tab='template']");
+    const oneTimeTabBtn = modal.querySelector(".tab-link[data-tab='oneTime']");
+    const templateTabContent = modal.querySelector("#template");
+    const oneTimeTabContent = modal.querySelector("#oneTime");
+
+    const setActiveTab = (tab) => {
+        if (tab === 'template') {
+          templateTabContent.style.display = "block";
+          oneTimeTabContent.style.display = "none";
+          templateTabBtn.classList.add("active");
+          oneTimeTabBtn.classList.remove("active");
+        } else if (tab === 'oneTime') {
+          templateTabContent.style.display = "none";
+          oneTimeTabContent.style.display = "block";
+          templateTabBtn.classList.remove("active");
+          oneTimeTabBtn.classList.add("active");
+        }
+      };
+
+    templateTabBtn.addEventListener("click", () => setActiveTab('template'));
+    oneTimeTabBtn.addEventListener("click", () => setActiveTab('oneTime'));
+    setActiveTab('template');
+
+    // Template tab
     const templateName = modal.querySelector("#event-template")
     const issue = modal.querySelector("#calendar-issue-number")
     const save = modal.querySelector("#add-calendar-template")
-    const calendarDataList = document.getElementById("calendar-jira-tasks")
+    const calendarDataList = modal.querySelector("#calendar-jira-tasks")
 
     issue.addEventListener("focus", onCalendarIssueInput)
     issue.addEventListener("input", onCalendarIssueInput)
@@ -63,15 +114,38 @@ const displayModal = (eventTitle) => {
         }
     })
 
-    closeBtn.addEventListener("click", () => {
-        modal.style.display = "none"
-    })
-
     save.addEventListener("click", () => {
         options.calendarTemplates.push(new Template(templateName.value, issue.value))
         options.save().then(() => {
             modal.style.display = "none"
         })
+    })
+
+    // One-time tab
+    const oneTimeIssue = modal.querySelector("#oneTime-issue-number")
+    const oneTimeDataList = modal.querySelector("#oneTime-jira-tasks")
+    const oneTimeDuration = modal.querySelector("#oneTime-duration")
+    const oneTimeLogBtn = modal.querySelector("#oneTime-logBtn")
+    const oneTimeDesc = modal.querySelector("#oneTime-desc")
+
+    oneTimeDuration.value = duration
+    oneTimeDesc.value = eventTitle
+    oneTimeIssue.addEventListener("focus", onOneTimeCalendarIssueInput)
+    oneTimeIssue.addEventListener("input", onOneTimeCalendarIssueInput)
+
+    document.querySelector("#modal .modal-content").addEventListener("click", (e) => {
+        if (!issue.contains(e.target) && !oneTimeDataList.contains(e.target)) {
+            oneTimeDataList.style.display = "none"
+        }
+    })
+
+    oneTimeLogBtn.addEventListener("click", () => {
+        logWork(oneTimeLogBtn, oneTimeIssue.value, date, oneTimeDuration.value, oneTimeDesc.value)
+        modal.style.display = "none"
+    })
+
+    closeBtn.addEventListener("click", () => {
+        modal.style.display = "none"
     })
 
     modal.addEventListener("click", (e) => {
@@ -114,7 +188,7 @@ const handleEventPeek = () => {
                     }
 
                     if (!logged) {
-                        displayModal(title)
+                        displayModal(title, minutes, date)
                     }
                 })
             }
@@ -151,7 +225,49 @@ const addTableLogButton = (eventTitle) => {
     const timeStart = timeMatch[1].split(":")
     const timeEnd = timeMatch[2].split(":")
     const minutes = (timeEnd[0] * 60 + parseInt(timeEnd[1])) - (timeStart[0] * 60 + parseInt(timeStart[1])) + "m"
-    // TODO: move here?
+
+    const getEventDate = () => {
+        // TODO: support month view or fuck it?
+        let date
+        if (window.location.href.endsWith("day")) {
+            // 10. leden 2025
+            // January 10, 2025
+            const dateString = document.getElementsByClassName("zytMo")[0].innerText.split(" ")
+            const month = dateMapping[dateString[1]] || dateString[1] // for cz or english lang
+            date = new Date(Date.parse(`${dateString[0]} ${month} ${dateString[2]}`))
+        } else if (window.location.href.endsWith("week")) {
+            let minDate
+            if (lang === "cs") {
+                const dateString = document.getElementsByClassName("zytMo")[0].innerText.split(" ")
+                if (dateString.length === 5) {
+                    // 06. – 10. leden 2025
+                    minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[3]]} ${dateString[4]}`))
+                } else if (dateString.length === 7) {
+                    // 30. prosinec 2024 – 03. leden 2025
+                    minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[1]]} ${dateString[2]}`))
+                } else {
+                    // 31. březen – 04. duben 2025
+                    minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[1]]} ${dateString[5]}`))
+                }
+            } else {
+                // default to en
+                const dateString = document.getElementsByClassName("zytMo")[0].innerText.split(" ")
+                if (dateString.length === 3) {
+                    // 2025, January 19–25
+                    minDate = new Date(Date.parse(`${dateString[2].split("–")[0]} ${dateString[1]} ${dateString[0].slice(0, -1)}`))
+                } else if (dateString.length === 7) {
+                    // 2024, December 29 – 2025, January 04
+                    minDate = new Date(Date.parse(`${dateString[2]} ${dateString[1]} ${dateString[0].slice(0, -1)}`))
+                } else {
+                    // 2025, January 26 – February 01
+                    minDate = new Date(Date.parse(`${dateString[2]} ${dateString[1]} ${dateString[0].slice(0, -1)}`))
+                }
+            }
+            date = new Date(minDate)
+            date.setDate(date.getDate() + dayIndex)
+        }
+        return date
+    }
 
     logButton.addEventListener("click", (e) => {
         e.stopImmediatePropagation()
@@ -160,44 +276,7 @@ const addTableLogButton = (eventTitle) => {
             const it = Object.assign({}, i)
             const regex = new RegExp(it.template, "i")
             if (regex.test(title)) {
-                // TODO: support month view or fuck it?
-                if (window.location.href.endsWith("day")) {
-                    // 10. leden 2025
-                    // January 10, 2025
-                    const dateString = document.getElementsByClassName("zytMo")[0].innerText.split(" ")
-                    const month = dateMapping[dateString[1]] || dateString[1] // for cz or english lang
-                    var date = new Date(Date.parse(`${dateString[0]} ${month} ${dateString[2]}`))
-                } else if (window.location.href.endsWith("week")) {
-                    let minDate
-                    if (lang === "cs") {
-                        const dateString = document.getElementsByClassName("zytMo")[0].innerText.split(" ")
-                        if (dateString.length === 5) {
-                            // 06. – 10. leden 2025
-                            minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[3]]} ${dateString[4]}`))
-                        } else if (dateString.length === 7) {
-                            // 30. prosinec 2024 – 03. leden 2025
-                            minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[1]]} ${dateString[2]}`))
-                        } else {
-                            // 31. březen – 04. duben 2025
-                            minDate = new Date(Date.parse(`${dateString[0]} ${dateMapping[dateString[1]]} ${dateString[5]}`))
-                        }
-                    } else {
-                        // default to en
-                        const dateString = document.getElementsByClassName("zytMo")[0].innerText.split(" ")
-                        if (dateString.length === 3) {
-                            // 2025, January 19–25
-                            minDate = new Date(Date.parse(`${dateString[2].split("–")[0]} ${dateString[1]} ${dateString[0].slice(0, -1)}`))
-                        } else if (dateString.length === 7) {
-                            // 2024, December 29 – 2025, January 04
-                            minDate = new Date(Date.parse(`${dateString[2]} ${dateString[1]} ${dateString[0].slice(0, -1)}`))
-                        } else {
-                            // 2025, January 26 – February 01
-                            minDate = new Date(Date.parse(`${dateString[2]} ${dateString[1]} ${dateString[0].slice(0, -1)}`))
-                        }
-                    }
-                    var date = new Date(minDate)
-                    date.setDate(date.getDate() + dayIndex)
-                }
+                const date = getEventDate()
                 logWork(logButton, it.issue, date, minutes, title)
                 logged = true
                 break
@@ -205,7 +284,7 @@ const addTableLogButton = (eventTitle) => {
         }
 
         if (!logged) {
-            displayModal(title)
+            displayModal(title, minutes, getEventDate())
         }
     })
 }
@@ -217,24 +296,49 @@ const init = () => {
     const modalHtml = `
     <div id="modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+          <span class="close">&times;</span>
+          <div class="tab-header">
+            <button class="tab-link active" data-tab="template">Add Event Template</button>
+            <button class="tab-link" data-tab="oneTime">One-Time Log</button>
+          </div>
+          <div class="tab-content" id="template">
             <h2>Calendar settings</h2>
             <ul id="calendar-template-list" class="task-list"></ul>
             <div class="mapping-group">
-                <div class="form-group">
-                    <label for="event-template">Event name template:</label>
-                    <input type="text" id="event-template">
-                </div>
-                <div class="form-group">
-                    <label for="calendar-issue-number">Jira task:</label>
-                    <input type="text" id="calendar-issue-number" autocomplete="off">
-                    <div class="datalist" id="calendar-jira-tasks"></div>
-                </div>
+              <div class="form-group">
+                <label for="event-template">Event name template:</label>
+                <input type="text" id="event-template">
+              </div>
+              <div class="form-group">
+                <label for="calendar-issue-number">Jira task:</label>
+                <input type="text" id="calendar-issue-number" autocomplete="off">
+                <div class="datalist" id="calendar-jira-tasks"></div>
+              </div>
             </div>
             <button id="add-calendar-template" class="blue-back">Add template</button><br>
+          </div>
+          <div class="tab-content" id="oneTime" style="display:none;">
+            <h2>One-Time Log</h2>
+            <div class="mapping-group">
+              <div class="form-group">
+                <label for="oneTime-issue-number">Jira task:</label>
+                <input type="text" id="oneTime-issue-number" autocomplete="off">
+                <div class="datalist" id="oneTime-jira-tasks"></div>
+              </div>
+              <div class="form-group">
+                <label for="oneTime-desc">Log description:</label>
+                <input type="text" id="oneTime-desc">
+              </div>
+              <div class="form-group">
+                <label for="oneTime-duration">Duration:</label>
+                <input type="text" id="oneTime-duration">
+              </div>
+            </div>
+            <button id="oneTime-logBtn" class="blue-back">Log work</button><br>
+          </div>
         </div>
     </div>
-    `.trim()
+`.trim();
 
     const modalContainer = document.createElement("div")
     modalContainer.innerHTML = modalHtml
