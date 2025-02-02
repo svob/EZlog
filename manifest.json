@@ -1,6 +1,6 @@
 {
     "name" : "Jira EZlog",
-    "description" : "TODO",
+    "description" : "An easy logging of work to Jira.",
     "version" : "0.1",
     "manifest_version" : 3,
     "action": {
