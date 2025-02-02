@@ -15,8 +15,7 @@
     "options_page": "/html/options.html",
     "permissions": [
         "storage",
-        "webNavigation",
-        "webRequest"
+        "webNavigation"
     ],
     "host_permissions": [
         "https://*.atlassian.net/*",
