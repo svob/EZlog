@@ -180,7 +180,7 @@ function setupCalendar(startOfWeek) {
         const totals = Array(7).fill(0)
         const promises = tasks.issues.map(task => {
             const taskDays = Array(7).fill(0)
-            return getWorklogForIssue(task.key).then(it => {
+            return getWorklogForIssue(task.id).then(it => {
                 const logs = it.worklogs
                     .filter(it => it.author.emailAddress === options.jiraUsername)
                     .filter(it => {

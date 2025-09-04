@@ -102,7 +102,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     }
                 })
                     .then(response => {
-                        console.log(Response)
+                        console.log(response)
                         return response.json()
                     })
                     .then(data => sendResponse({data}))
@@ -115,7 +115,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else if (message.type === "search") {
         getLocalData().then(items => {
             console.log(items)
-            const url = items.jiraUrl + "rest/api/3/search?jql=" + message.jql
+            // const url = items.jiraUrl + "rest/api/3/search/jql?jql=" + message.jql
+            const searchParams = new URLSearchParams({ jql: message.jql, fields: "id,key,summary" });
+            const url = items.jiraUrl + "rest/api/3/search/jql?" + searchParams.toString();
 
             fetch(url, {
                 method: 'GET',
